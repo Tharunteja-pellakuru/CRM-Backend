@@ -6,6 +6,7 @@ const {
   getAllAdminUsers,
   createAdminUser,
   updateAdminUser,
+  updatePassword,
 } = require("../controllers/adminUserController");
 
 // Get all admin users (excluding logged-in user via query param)
@@ -20,5 +21,8 @@ router.post(
   upload.single("image"),
   updateAdminUser,
 );
+
+// Update password
+router.post("/admin-users/update-password/:uuid", updatePassword);
 
 module.exports = router;

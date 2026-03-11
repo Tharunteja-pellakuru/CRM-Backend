@@ -151,4 +151,56 @@ const updateAdminUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllAdminUsers, createAdminUser, updateAdminUser };
+// Update password
+const updatePassword = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Current password and new password are required",
+      });
+    }
+
+    // Get user from database
+    const query = "SELECT * FROM admin_users WHERE uuid = ? LIMIT 1";
+    db.query(query, [uuid], async (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const user = results[0];
+
+      // Verify current password
+      const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!passwordMatch) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password in database
+      const updateQuery = "UPDATE admin_users SET password = ? WHERE uuid = ?";
+      db.query(updateQuery, [hashedPassword, uuid], (updateErr) => {
+        if (updateErr) {
+          console.error(updateErr);
+          return res.status(500).json({ message: "Failed to update password" });
+        }
+
+        res.json({ message: "Password updated successfully" });
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getAllAdminUsers, createAdminUser, updateAdminUser, updatePassword };
