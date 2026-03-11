@@ -33,6 +33,11 @@ const loginAdmin = (req, res) => {
       });
     }
 
+    // Construct full image URL if image exists
+    const imageUrl = user.image 
+      ? `http://localhost:5000/uploads/admin/${user.image}`
+      : null;
+
     res.status(200).json({
       message: "Login successful",
       user: {
@@ -42,7 +47,7 @@ const loginAdmin = (req, res) => {
         email: user.email,
         role: user.role,
         privileges: user.privileges,
-        image: user.image,
+        image: imageUrl,
         status: user.status,
       },
     });
