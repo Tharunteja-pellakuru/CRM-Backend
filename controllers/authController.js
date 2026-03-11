@@ -36,12 +36,14 @@ const loginAdmin = (req, res) => {
     res.status(200).json({
       message: "Login successful",
       user: {
+        id: user.id,
         uuid: user.uuid,
         full_name: user.full_name,
         email: user.email,
         role: user.role,
         privileges: user.privileges,
         image: user.image,
+        status: user.status,
       },
     });
   });

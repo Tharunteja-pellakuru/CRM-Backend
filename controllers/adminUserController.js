@@ -39,4 +39,50 @@ const createAdminUser = async (req, res) => {
   }
 };
 
-module.exports = { createAdminUser };
+const updateAdminUser = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+
+    const { full_name, email, password, role, privileges, status } = req.body;
+
+    const image = req.file ? req.file.filename : null;
+
+    let hashedPassword = null;
+
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    const query = `
+      UPDATE admin_users
+      SET 
+        full_name = ?,
+        email = ?,
+        password = COALESCE(?, password),
+        role = ?,
+        privileges = ?,
+        status = ?,
+        image = COALESCE(?, image)
+      WHERE uuid = ?
+    `;
+
+    db.query(
+      query,
+      [full_name, email, hashedPassword, role, privileges, status, image, uuid],
+      (err, result) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Database error" });
+        }
+
+        res.json({
+          message: "Admin user updated successfully",
+        });
+      },
+    );
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { createAdminUser, updateAdminUser };
