@@ -203,4 +203,45 @@ const updatePassword = async (req, res) => {
   }
 };
 
-module.exports = { getAllAdminUsers, createAdminUser, updateAdminUser, updatePassword };
+// Delete admin user
+const deleteAdminUser = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+
+    // Check if user exists
+    const checkQuery = "SELECT * FROM admin_users WHERE uuid = ? LIMIT 1";
+    db.query(checkQuery, [uuid], (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const user = results[0];
+
+      // Prevent deletion of Root Admin
+      if (user.role === "Root Admin") {
+        return res.status(403).json({ message: "Root Admin cannot be deleted" });
+      }
+
+      // Delete user from database
+      const deleteQuery = "DELETE FROM admin_users WHERE uuid = ?";
+      db.query(deleteQuery, [uuid], (deleteErr) => {
+        if (deleteErr) {
+          console.error(deleteErr);
+          return res.status(500).json({ message: "Failed to delete user" });
+        }
+
+        res.json({ message: "User deleted successfully" });
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getAllAdminUsers, createAdminUser, updateAdminUser, updatePassword, deleteAdminUser };

@@ -7,6 +7,7 @@ const {
   createAdminUser,
   updateAdminUser,
   updatePassword,
+  deleteAdminUser,
 } = require("../controllers/adminUserController");
 
 // Get all admin users (excluding logged-in user via query param)
@@ -24,5 +25,8 @@ router.post(
 
 // Update password
 router.post("/admin-users/update-password/:uuid", updatePassword);
+
+// Delete admin user
+router.delete("/admin-users/:uuid", deleteAdminUser);
 
 module.exports = router;
