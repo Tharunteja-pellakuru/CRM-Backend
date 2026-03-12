@@ -1,5 +1,9 @@
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_EXPIRES_IN = "7d"; // 7 days
 
 const loginAdmin = (req, res) => {
   const { email, password } = req.body;
@@ -33,6 +37,18 @@ const loginAdmin = (req, res) => {
       });
     }
 
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        role: user.role,
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
     // Construct full image URL if image exists
     const imageUrl = user.image 
       ? `http://localhost:5000/uploads/admin/${user.image}`
@@ -40,6 +56,7 @@ const loginAdmin = (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         id: user.id,
         uuid: user.uuid,

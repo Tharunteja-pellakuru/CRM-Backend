@@ -9,8 +9,8 @@ const {
 } = require("../controllers/leadsController");
 
 router.post("/add-lead", createLead);
-router.put("/update-lead", updateLead);
+router.put("/update-lead/:id", updateLead);
 router.get("/get-leads", getLeads);
-router.delete("/delete-lead", deleteLead);
+router.delete("/delete-lead/:id", deleteLead);
 
 module.exports = router;

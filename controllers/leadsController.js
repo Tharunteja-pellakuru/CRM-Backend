@@ -52,22 +52,45 @@ const createLead = (req, res) => {
 
 const updateLead = (req, res) => {
   try {
-    const { uuid } = req.params;
-    const { full_name, phone_number, email, status, message } = req.body;
+    const { id } = req.params; // Get id from route params
+    const {
+      full_name,
+      phone_number,
+      lead_category,
+      lead_status,
+      website_url,
+      email,
+      message
+    } = req.body;
 
-    const query = `UPDATE leads_table SET full_name = ?, phone_number = ?, email = ?, status = ?, message = ? WHERE uuid = ?;`;
+    const updateQuery = `UPDATE leads_table SET full_name = ?, phone_number = ?, email = ?, lead_status = ?, message = ?, lead_category=?, website_url=? WHERE id = ?;`;
     db.query(
-      query,
-      [full_name, phone_number, email, status, message, uuid],
-      (err) => {
-        if ((err, result)) {
+      updateQuery,
+      [full_name, phone_number, email, lead_status, message, lead_category, website_url, id],
+      (err, result) => {
+        if (err) {
           console.log("Server Error!.");
           return res.status(500).json({ message: err.message });
         }
         if (result.affectedRows === 0) {
           return res.status(404).json({ message: "Lead Not Found!." });
         }
-        res.status(200).json({ message: "Lead Updated Successfully!." });
+        
+        // Fetch the updated lead to return complete data
+        const selectQuery = `SELECT * FROM leads_table WHERE id = ?;`;
+        db.query(selectQuery, [id], (selectErr, selectResult) => {
+          if (selectErr) {
+            console.log("Error fetching updated lead:", selectErr.message);
+            return res.status(500).json({ message: selectErr.message });
+          }
+          if (selectResult.length === 0) {
+            return res.status(404).json({ message: "Lead not found after update." });
+          }
+          res.status(200).json({ 
+            message: "Lead Updated Successfully!.", 
+            lead: selectResult[0] // Return the complete updated lead object
+          });
+        });
       },
     );
   } catch (err) {
@@ -109,21 +132,28 @@ const getLead = (req, res) => {
 }
 
 const deleteLead = (req, res) => {
-try{
-  const { uuid } = req.params;
+  try {
+    const { id } = req.params; // Get id from route params
 
-  const query = `DELETE FROM leads_table WHERE uuid = ?;`;
-  db.query(query, [uuid], (err) => {
-    if (err){
-      console.log("Server Error!.", err.message)
-      return res.status(500).json({message:err.message})
+    if (!id) {
+      return res.status(400).json({ message: "Lead ID is required" });
     }
-    res.status(200).json({message:"Lead Deleted Successfully!."})
-  })
-}
-catch(err){
-  return res.status(500).json({message: "Server Error!."});
-}
+
+    const query = `DELETE FROM leads_table WHERE id = ?;`;
+    db.query(query, [id], (err, result) => {
+      if (err) {
+        console.log("Server Error.", err.message);
+        return res.status(500).json({ message: err.message });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Lead not found." });
+      }
+      res.status(200).json({ message: "Lead Deleted Successfully!." });
+    });
+  } catch (err) {
+    console.error("Error deleting lead:", err);
+    return res.status(500).json({ message: "Server Error!." });
+  }
 };
 
 module.exports = { createLead, updateLead, getLeads, deleteLead};
