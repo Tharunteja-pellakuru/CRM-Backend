@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const getAllAdminUsers = async (req, res) => {
   try {
     const { excludeUuid } = req.query;
-    
+
     let query = `
       SELECT 
         uuid as id, 
@@ -19,14 +19,14 @@ const getAllAdminUsers = async (req, res) => {
         image
       FROM admin_users
     `;
-    
+
     const queryParams = [];
-    
+
     if (excludeUuid) {
       query += ` WHERE uuid != ?`;
       queryParams.push(excludeUuid);
     }
-    
+
     query += ` ORDER BY 
       CASE 
         WHEN role = 'Root Admin' THEN 0 
@@ -41,11 +41,15 @@ const getAllAdminUsers = async (req, res) => {
       }
 
       // Transform results to include full image URL and format status
-      const users = results.map(user => ({
+      const users = results.map((user) => ({
         ...user,
         status: user.status === 1 ? "Active" : "Inactive",
-        joinDate: user.joinDate ? user.joinDate.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-        image: user.image ? `http://localhost:5000/uploads/admin/${user.image}` : null,
+        joinDate: user.joinDate
+          ? user.joinDate.toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        image: user.image
+          ? `http://localhost:5000/uploads/admin/${user.image}`
+          : null,
       }));
 
       res.json({
@@ -59,6 +63,7 @@ const getAllAdminUsers = async (req, res) => {
   }
 };
 
+// Create Admin Users
 const createAdminUser = async (req, res) => {
   try {
     const { full_name, email, password, role, privileges } = req.body;
@@ -96,6 +101,7 @@ const createAdminUser = async (req, res) => {
   }
 };
 
+// Update Admin Users
 const updateAdminUser = async (req, res) => {
   try {
     const { uuid } = req.params;
@@ -111,7 +117,10 @@ const updateAdminUser = async (req, res) => {
     }
 
     // Convert status to number (FormData sends it as string)
-    const statusValue = status === "1" || status === 1 || status === "true" || status === true ? 1 : 0;
+    const statusValue =
+      status === "1" || status === 1 || status === "true" || status === true
+        ? 1
+        : 0;
 
     const query = `
       UPDATE admin_users
@@ -128,7 +137,16 @@ const updateAdminUser = async (req, res) => {
 
     db.query(
       query,
-      [full_name, email, hashedPassword, role, privileges || 'Both', statusValue, image, uuid],
+      [
+        full_name,
+        email,
+        hashedPassword,
+        role,
+        privileges || "Both",
+        statusValue,
+        image,
+        uuid,
+      ],
       (err, result) => {
         if (err) {
           console.error(err);
@@ -136,7 +154,7 @@ const updateAdminUser = async (req, res) => {
         }
 
         // Construct full image URL
-        const imageUrl = req.file 
+        const imageUrl = req.file
           ? `http://localhost:5000/uploads/admin/${req.file.filename}`
           : null;
 
@@ -178,9 +196,14 @@ const updatePassword = async (req, res) => {
       const user = results[0];
 
       // Verify current password
-      const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+      const passwordMatch = await bcrypt.compare(
+        currentPassword,
+        user.password,
+      );
       if (!passwordMatch) {
-        return res.status(401).json({ message: "Current password is incorrect" });
+        return res
+          .status(401)
+          .json({ message: "Current password is incorrect" });
       }
 
       // Hash new password
@@ -224,7 +247,9 @@ const deleteAdminUser = async (req, res) => {
 
       // Prevent deletion of Root Admin
       if (user.role === "Root Admin") {
-        return res.status(403).json({ message: "Root Admin cannot be deleted" });
+        return res
+          .status(403)
+          .json({ message: "Root Admin cannot be deleted" });
       }
 
       // Delete user from database
@@ -244,4 +269,10 @@ const deleteAdminUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllAdminUsers, createAdminUser, updateAdminUser, updatePassword, deleteAdminUser };
+module.exports = {
+  getAllAdminUsers,
+  createAdminUser,
+  updateAdminUser,
+  updatePassword,
+  deleteAdminUser,
+};
