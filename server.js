@@ -33,11 +33,10 @@ app.listen(PORT, () => {
   createLeadsTable();
 });
 
-/* Routes */
-app.use("/api", adminUserRoutes);
-app.use("/api", authRoutes);
-app.use("/api", aiRoutes);
-app.use("/api", leadsRoutes);
+const { authenticateToken } = require("./middleware/authMiddleware");
+
+/* Public Routes */
+app.use("/api", authRoutes); // /api/login
 
 // Test route to verify AI routes are working
 app.get("/api/test-routes", (req, res) => {
@@ -51,3 +50,10 @@ app.get("/api/test-routes", (req, res) => {
 app.get("/", (req, res) => {
   res.send("CRM Backend Running");
 });
+
+/* Protected Routes (require token) */
+app.use("/api", authenticateToken); 
+
+app.use("/api", adminUserRoutes);
+app.use("/api", aiRoutes);
+app.use("/api", leadsRoutes);
