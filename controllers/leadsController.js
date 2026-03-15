@@ -13,6 +13,7 @@ const createLead = (req, res) => {
       website_url,
       email,
       message,
+      country,
     } = req.body;
 
     const query = `INSERT INTO leads_table (uuid, full_name,
@@ -21,7 +22,8 @@ const createLead = (req, res) => {
       lead_status,
       website_url,
       email,     
-      message) VALUES (?,?,?,?,?,?,?,?)`;
+      message,
+      country) VALUES (?,?,?,?,?,?,?,?,?)`;
 
     db.query(
       query,
@@ -34,6 +36,7 @@ const createLead = (req, res) => {
         website_url,
         email,
         message,
+        country,
       ],
       (err, result) => {
         if (err) {
@@ -69,6 +72,7 @@ const updateLead = (req, res) => {
       message,
       lead_category,
       website_url,
+      country,
     } = req.body;
 
     const query = `UPDATE leads_table SET 
@@ -78,7 +82,8 @@ const updateLead = (req, res) => {
       lead_status = ?, 
       message = ?, 
       lead_category = ?, 
-      website_url = ? 
+      website_url = ?,
+      country = ?
       WHERE id = ? OR uuid = ?;`;
 
     db.query(
@@ -91,6 +96,7 @@ const updateLead = (req, res) => {
         message,
         lead_category,
         website_url,
+        country,
         id,
         id,
       ],

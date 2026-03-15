@@ -7,6 +7,8 @@ require("dotenv").config();
 const {
   createLeadsTable,
   createUsersTable,
+  createNewFollowupsTable,
+  createFollowupSummaryTable,
 } = require("./database/createTables");
 
 // Route Imports
@@ -14,6 +16,7 @@ const adminUserRoutes = require("./routes/adminUserRoutes");
 const authRoutes = require("./routes/authRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const leadsRoutes = require("./routes/leadsRoutes");
+const followUpsRoutes = require("./routes/followUpsRoutes");
 
 const app = express();
 
@@ -31,6 +34,8 @@ app.listen(PORT, () => {
   /* Create tables when server starts */
   createUsersTable();
   createLeadsTable();
+  createNewFollowupsTable();
+  createFollowupSummaryTable();
 });
 
 const { authenticateToken } = require("./middleware/authMiddleware");
@@ -52,8 +57,10 @@ app.get("/", (req, res) => {
 });
 
 /* Protected Routes (require token) */
-app.use("/api", authenticateToken); 
+app.use("/api", authenticateToken);
 
 app.use("/api", adminUserRoutes);
 app.use("/api", aiRoutes);
 app.use("/api", leadsRoutes);
+app.use("/api", followUpsRoutes);
+
