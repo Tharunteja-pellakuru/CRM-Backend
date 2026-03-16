@@ -72,7 +72,10 @@ const createAdminUser = async (req, res) => {
 
     const userUUID = uuidv4();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword =
+      password === ""
+        ? await bcrypt.hash("Password@123", 10)
+        : await bcrypt.hash(password, 10);
 
     const query = `
       INSERT INTO admin_users 
