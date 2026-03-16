@@ -48,7 +48,7 @@ const getAllAdminUsers = async (req, res) => {
           ? user.joinDate.toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
         image: user.image
-          ? `http://localhost:5000/uploads/admin/${user.image}`
+          ? `${req.protocol}://${req.get("host")}/uploads/admin/${user.image}`
           : null,
       }));
 
@@ -155,7 +155,7 @@ const updateAdminUser = async (req, res) => {
 
         // Construct full image URL
         const imageUrl = req.file
-          ? `http://localhost:5000/uploads/admin/${req.file.filename}`
+          ? `${req.protocol}://${req.get("host")}/uploads/admin/${req.file.filename}`
           : null;
 
         res.json({
