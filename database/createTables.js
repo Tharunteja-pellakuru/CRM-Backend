@@ -35,7 +35,7 @@ const createLeadsTable = () => {
   full_name VARCHAR(100) NOT NULL,
   phone_number VARCHAR(20),
   email VARCHAR(250),
-  lead_category ENUM ('Tech', 'Social Media') NOT NULL,
+  lead_category ENUM ('Tech', 'Social Media', 'Both') NOT NULL,
   lead_status VARCHAR(50),
   website_url TEXT,
   message TEXT,
