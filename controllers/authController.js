@@ -14,7 +14,7 @@ const loginAdmin = (req, res) => {
     });
   }
 
-  const query = "SELECT * FROM admin_users WHERE email = ? LIMIT 1";
+  const query = "SELECT * FROM crm_tbl_admins WHERE email = ? LIMIT 1";
 
   db.query(query, [email], async (err, result) => {
     if (err) {

@@ -17,7 +17,7 @@ const seed = async () => {
   const uuid = uuidv4();
 
   connection.query(
-    "SELECT * FROM admin_users WHERE email = ?",
+    "SELECT * FROM crm_tbl_admins WHERE email = ?",
     [email],
     (err, results) => {
       if (err) {
@@ -27,8 +27,8 @@ const seed = async () => {
 
       if (results.length === 0) {
         connection.query(
-          "INSERT INTO admin_users (uuid, full_name, email, password, role, privileges, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [uuid, "Chaitanya Admin", email, hashedPassword, "Root Admin", "Both", 1],
+          "INSERT INTO crm_tbl_admins (uuid, full_name, email, password, role, privileges, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [uuid, "Chaitanya Admin", email, hashedPassword, "Root Admin", 3, 1],
           (err) => {
             if (err) {
               console.error("Error seeding user:", err);

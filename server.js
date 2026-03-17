@@ -4,12 +4,7 @@ const path = require("path");
 require("dotenv").config();
 
 // Tables
-const {
-  createLeadsTable,
-  createUsersTable,
-  createNewFollowupsTable,
-  createFollowupSummaryTable,
-} = require("./database/createTables");
+const { createAllTables } = require("./database/createTables");
 
 // Route Imports
 const adminUserRoutes = require("./routes/adminUserRoutes");
@@ -17,6 +12,8 @@ const authRoutes = require("./routes/authRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const leadsRoutes = require("./routes/leadsRoutes");
 const followUpsRoutes = require("./routes/followUpsRoutes");
+const clientsRoutes = require("./routes/clientsRoutes");
+const projectsRoutes = require("./routes/projectsRoutes");
 
 const app = express();
 
@@ -28,14 +25,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
 
-  /* Create tables when server starts */
-  createUsersTable();
-  createLeadsTable();
-  createNewFollowupsTable();
-  createFollowupSummaryTable();
+  /* Create tables when server starts — sequential to respect foreign keys */
+  await createAllTables();
 });
 
 const { authenticateToken } = require("./middleware/authMiddleware");
@@ -63,4 +57,5 @@ app.use("/api", adminUserRoutes);
 app.use("/api", aiRoutes);
 app.use("/api", leadsRoutes);
 app.use("/api", followUpsRoutes);
-
+app.use("/api", clientsRoutes);
+app.use("/api", projectsRoutes);

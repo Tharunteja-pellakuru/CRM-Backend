@@ -18,7 +18,7 @@ const createNewFollowup = async (req, res) => {
   try {
     const uuid = uuidv4();
     const query = `
-      INSERT INTO lead_followups (
+      INSERT INTO crm_tbl_leadFollowups (
         uuid, followup_title, followup_description, followup_datetime, 
         followup_mode, followup_status, followup_priority, lead_id
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -67,8 +67,8 @@ const createNewFollowup = async (req, res) => {
 const getAllFollowups = async (req, res) => {
   const query = `
     SELECT f.*, s.conclusion_message as follow_brief, s.completed_at, s.completed_by 
-    FROM lead_followups f
-    LEFT JOIN followup_summary s ON f.id = s.followup_id
+    FROM crm_tbl_leadFollowups f
+    LEFT JOIN crm_tbl_followUpSummary s ON f.id = s.followup_id
     ORDER BY f.followup_datetime ASC
   `;
   db.query(query, (err, results) => {
@@ -107,7 +107,7 @@ const updateFollowup = async (req, res) => {
   } = req.body;
 
   const query = `
-    UPDATE lead_followups 
+    UPDATE crm_tbl_leadFollowups 
     SET followup_title = ?, followup_description = ?, followup_datetime = ?, 
         followup_mode = ?, followup_status = ?, followup_priority = ?
     WHERE id = ?
@@ -147,7 +147,7 @@ const updateFollowup = async (req, res) => {
 // Delete followup
 const deleteFollowup = async (req, res) => {
   const { id } = req.params;
-  const query = "DELETE FROM lead_followups WHERE id = ?";
+  const query = "DELETE FROM crm_tbl_leadFollowups WHERE id = ?";
   db.query(query, [id], (err, result) => {
     if (err) {
       console.error("Error deleting followup:", err);
@@ -171,18 +171,18 @@ const toggleFollowupStatus = async (req, res) => {
   const formattedStatus = capitalize(status);
 
   // Use a transaction or sequential execution
-  const queryUpdate = "UPDATE lead_followups SET followup_status = ? WHERE id = ?";
+  const queryUpdate = "UPDATE crm_tbl_leadFollowups SET followup_status = ? WHERE id = ?";
   db.query(queryUpdate, [formattedStatus, id], (err, result) => {
     if (err) {
       console.error("Error toggling followup status:", err);
       return res.status(500).json({ message: "Database error" });
     }
 
-    // If status is "Completed", also update/insert into followup_summary
+    // If status is "Completed", also update/insert into crm_tbl_followUpSummary
     if (formattedStatus === "Completed") {
       const summaryUuid = uuidv4();
       const querySummary = `
-        INSERT INTO followup_summary (uuid, followup_id, conclusion_message, completed_at, completed_by)
+        INSERT INTO crm_tbl_followUpSummary (uuid, followup_id, conclusion_message, completed_at, completed_by)
         VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE conclusion_message = ?, completed_at = ?, completed_by = ?
       `;

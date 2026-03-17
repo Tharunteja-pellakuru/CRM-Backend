@@ -16,7 +16,7 @@ const createLead = (req, res) => {
       country,
     } = req.body;
 
-    const query = `INSERT INTO leads_table (uuid, full_name,
+    const query = `INSERT INTO crm_tbl_leads (uuid, full_name,
       phone_number,
       lead_category,
       lead_status,
@@ -43,17 +43,23 @@ const createLead = (req, res) => {
           console.error("Error creating lead:", err.message);
           return res.status(500).json({ message: err.message });
         }
-        
+
         // Fetch the created lead to return it
-        db.query("SELECT * FROM leads_table WHERE id = ?", [result.insertId], (err, leads) => {
-          if (err) {
-            return res.status(201).json({ message: "Lead Created Successfully!.", uuid: uuid });
-          }
-          res.status(201).json({ 
-            message: "Lead Created Successfully!.", 
-            lead: leads[0] 
-          });
-        });
+        db.query(
+          "SELECT * FROM crm_tbl_leads WHERE id = ?",
+          [result.insertId],
+          (err, leads) => {
+            if (err) {
+              return res
+                .status(201)
+                .json({ message: "Lead Created Successfully!.", uuid: uuid });
+            }
+            res.status(201).json({
+              message: "Lead Created Successfully!.",
+              lead: leads[0],
+            });
+          },
+        );
       },
     );
   } catch (err) {
@@ -75,7 +81,7 @@ const updateLead = (req, res) => {
       country,
     } = req.body;
 
-    const query = `UPDATE leads_table SET 
+    const query = `UPDATE crm_tbl_leads SET 
       full_name = ?, 
       phone_number = ?, 
       email = ?, 
@@ -84,7 +90,7 @@ const updateLead = (req, res) => {
       lead_category = ?, 
       website_url = ?,
       country = ?
-      WHERE id = ? OR uuid = ?;`;
+      WHERE id = ?;`;
 
     db.query(
       query,
@@ -98,7 +104,6 @@ const updateLead = (req, res) => {
         website_url,
         country,
         id,
-        id,
       ],
       (err, result) => {
         if (err) {
@@ -108,17 +113,23 @@ const updateLead = (req, res) => {
         if (result.affectedRows === 0) {
           return res.status(404).json({ message: "Lead Not Found!." });
         }
-        
+
         // Fetch the updated lead to return it
-        db.query("SELECT * FROM leads_table WHERE id = ? OR uuid = ?", [id, id], (err, leads) => {
-          if (err) {
-             return res.status(200).json({ message: "Lead Updated Successfully!." });
-          }
-          res.status(200).json({ 
-            message: "Lead Updated Successfully!.", 
-            lead: leads[0] 
-          });
-        });
+        db.query(
+          "SELECT * FROM crm_tbl_leads WHERE id = ?",
+          [id],
+          (err, leads) => {
+            if (err) {
+              return res
+                .status(200)
+                .json({ message: "Lead Updated Successfully!." });
+            }
+            res.status(200).json({
+              message: "Lead Updated Successfully!.",
+              lead: leads[0],
+            });
+          },
+        );
       },
     );
   } catch (err) {
@@ -129,7 +140,7 @@ const updateLead = (req, res) => {
 
 const getLeads = (req, res) => {
   try {
-    const query = `SELECT * FROM leads_table`;
+    const query = `SELECT * FROM crm_tbl_leads`;
     db.query(query, (err, result) => {
       if (err) {
         return res.status(500).json({ message: err.message });
@@ -147,7 +158,7 @@ const deleteLead = (req, res) => {
   try {
     const { id } = req.params;
 
-    const query = `DELETE FROM leads_table WHERE id = ? OR uuid = ?;`;
+    const query = `DELETE FROM crm_tbl_leads WHERE id = ? OR uuid = ?;`;
     db.query(query, [id, id], (err, result) => {
       if (err) {
         console.error("Database error deleting lead:", err.message);

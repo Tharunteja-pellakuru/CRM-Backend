@@ -1,116 +1,195 @@
 const db = require("../config/db");
 
+// Helper to run a query as a promise
+const runQuery = (query, successMsg, errorMsg) => {
+  return new Promise((resolve) => {
+    db.query(query, (err) => {
+      if (err) {
+        console.error(errorMsg, err.message);
+      } else {
+        console.log(successMsg);
+      }
+      resolve();
+    });
+  });
+};
+
 // Admin Users
 const createUsersTable = () => {
-  const query = `
-    CREATE TABLE IF NOT EXISTS admin_users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    uuid VARCHAR(100) UNIQUE,
-    full_name VARCHAR(150) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role VARCHAR(50),
-    status BOOLEAN DEFAULT TRUE,
-    privileges VARCHAR(255),
-    image TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-  `;
-
-  db.query(query, (err) => {
-    if (err) {
-      console.error("Error creating users table:", err);
-    } else {
-      console.log("Users table ready");
-    }
-  });
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_admins (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid VARCHAR(100) UNIQUE,
+      full_name VARCHAR(150) NOT NULL,
+      email VARCHAR(150) UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role VARCHAR(50),
+      status BOOLEAN DEFAULT TRUE,
+      privileges INT,
+      image TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    "Users table ready",
+    "Error creating users table:",
+  );
 };
 
 // Leads
 const createLeadsTable = () => {
-  const query = `CREATE TABLE IF NOT EXISTS leads_table (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  uuid CHAR(36) UNIQUE,
-  full_name VARCHAR(100) NOT NULL,
-  phone_number VARCHAR(20),
-  email VARCHAR(250),
-  lead_category ENUM ('Tech', 'Social Media', 'Both') NOT NULL,
-  lead_status VARCHAR(50),
-  website_url TEXT,
-  message TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);`;
-
-  db.query(query, (err) => {
-    if (err) {
-      console.error("Error Creating Leads Table.");
-    } else {
-      console.log("Leads Table Created");
-    }
-  });
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_leads (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid CHAR(36) UNIQUE,
+      full_name VARCHAR(100) NOT NULL,
+      phone_number VARCHAR(20),
+      email VARCHAR(250),
+      lead_category INT NOT NULL,
+      lead_status VARCHAR(50),
+      website_url TEXT,
+      message TEXT,
+      country VARCHAR(100),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    "Leads Table Created",
+    "Error Creating Leads Table:",
+  );
 };
 
+// Followups (depends on crm_tbl_leads)
 const createNewFollowupsTable = () => {
-  const query = `CREATE TABLE IF NOT EXISTS lead_followups  (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    uuid VARCHAR(100) UNIQUE,
-    followup_title VARCHAR(100) NOT NULL,
-    followup_description TEXT,
-    followup_datetime DATETIME NOT NULL,
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_leadFollowups (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid VARCHAR(100) UNIQUE,
+      followup_title VARCHAR(100) NOT NULL,
+      followup_description TEXT,
+      followup_datetime DATETIME NOT NULL,
+      followup_mode ENUM('Call','Email','Whatsapp','Meeting') NOT NULL,
+      followup_status ENUM('Pending','Completed','Reschedule','Cancelled') NOT NULL DEFAULT 'Pending',
+      followup_priority ENUM('High','Medium','Low') NOT NULL DEFAULT 'Medium',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      lead_id INT NOT NULL,
+      INDEX (lead_id),
+      FOREIGN KEY (lead_id) REFERENCES crm_tbl_leads(id) ON DELETE CASCADE
+    )`,
+    "Followups Table Created",
+    "Error Creating Followups Table:",
+  );
+};
 
-    followup_mode ENUM('Call','Email','Whatsapp','Meeting') NOT NULL,
+// Followup Summary (depends on crm_tbl_leadFollowups)
+const createFollowupSummaryTable = () => {
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_followUpSummary (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      uuid VARCHAR(250) UNIQUE NOT NULL,
+      followup_id INT NOT NULL,
+      conclusion_message TEXT NOT NULL,
+      completed_at DATETIME NOT NULL,
+      completed_by VARCHAR(100),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (followup_id)
+          REFERENCES crm_tbl_leadFollowups(id)
+          ON DELETE CASCADE
+    )`,
+    "Followup Summary Table Created",
+    "Error Creating Followup Summary Table:",
+  );
+};
 
-    followup_status ENUM('Pending','Completed','Reschedule','Cancelled') NOT NULL DEFAULT 'Pending',
+// AI Models (no dependencies)
+const createAiModelsTable = () => {
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_aiModels (
+      id VARCHAR(100) PRIMARY KEY,
+      name VARCHAR(150) NOT NULL,
+      provider VARCHAR(100),
+      model_id VARCHAR(150),
+      api_key TEXT,
+      is_default BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    "AI Models Table Created",
+    "Error Creating AI Models Table:",
+  );
+};
 
-    followup_priority ENUM('High','Medium','Low') NOT NULL DEFAULT 'Medium',
+const createClientsTable = () => {
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_clients (
+      client_id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid CHAR(36) NOT NULL UNIQUE,
+      organisation_name VARCHAR(255) NOT NULL,
+      client_name VARCHAR(255),
+      client_country VARCHAR(100),
+      client_state VARCHAR(100) DEFAULT '',
+      client_currency VARCHAR(10),
+      client_status VARCHAR(50),
+      lead_id INT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_client_lead
+          FOREIGN KEY (lead_id)
+          REFERENCES crm_tbl_leads(id)
+          ON DELETE SET NULL
+          ON UPDATE CASCADE
+    )`,
+    "Clients Table Created",
+    "Error Creating Clients Table:",
+  );
+};
+
+const createProjectsTable = () => {
+  return runQuery(
+    `CREATE TABLE crm_tbl_projects (
+    project_id INT AUTO_INCREMENT PRIMARY KEY,
+    uuid CHAR(36) NOT NULL UNIQUE,
+    project_name VARCHAR(250) NOT NULL,
+    project_description TEXT,
+    project_category ENUM('Tech','Social Media','Both') DEFAULT 'Tech',
+    project_status ENUM('Hold','In Progress','Completed') DEFAULT 'In Progress',
+    project_priority ENUM('High','Medium','Low') DEFAULT 'High',
+    project_budget INT,
+    onboarding_date DATE,
+    deadline_date DATE,
+    scope_document VARCHAR(500),
+    client_id INT,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    lead_id INT NOT NULL,
-    INDEX (lead_id),
-
-    FOREIGN KEY (lead_id) REFERENCES leads_table(id) ON DELETE CASCADE
-);`;
-  db.query(query, (err) => {
-    if (err) {
-      console.log("Error Creating Follows Table.");
-    } else {
-      console.log("Follows Table Created");
-    }
-  });
+    CONSTRAINT fk_project_client
+        FOREIGN KEY (client_id)
+        REFERENCES crm_tbl_clients(client_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+)`,
+    "Projects Table Created",
+    "Error Creating Projects Table:",
+  );
 };
 
-const createFollowupSummaryTable = () => {
-  const query = `CREATE TABLE IF NOT EXISTS followup_summary (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    uuid VARCHAR(250) UNIQUE NOT NULL,
-    followup_id INT NOT NULL,
-    conclusion_message TEXT NOT NULL,
-    completed_at DATETIME NOT NULL,
-    completed_by VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_followup_conclusion
-        FOREIGN KEY (followup_id)
-        REFERENCES lead_followups(id)
-        ON DELETE CASCADE
-);`;
-
-  db.query(query, (err) => {
-    if (err) {
-      console.error("Error Creating Followup Summary Table.");
-    } else {
-      console.log("Followup Summary Table Created");
-    }
-  });
+// Create all tables in correct order (sequential)
+const createAllTables = async () => {
+  await createUsersTable();
+  await createLeadsTable();
+  await createNewFollowupsTable();
+  await createFollowupSummaryTable();
+  await createAiModelsTable();
+  await createClientsTable();
+  await createProjectsTable();
 };
 
 module.exports = {
   createUsersTable,
   createLeadsTable,
+  createClientsTable,
   createNewFollowupsTable,
   createFollowupSummaryTable,
+  createProjectsTable,
+  createAiModelsTable,
+  createAllTables,
 };

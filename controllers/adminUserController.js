@@ -17,7 +17,7 @@ const getAllAdminUsers = async (req, res) => {
         status,
         created_at as joinDate,
         image
-      FROM admin_users
+      FROM crm_tbl_admins
     `;
 
     const queryParams = [];
@@ -78,7 +78,7 @@ const createAdminUser = async (req, res) => {
         : await bcrypt.hash(password, 10);
 
     const query = `
-      INSERT INTO admin_users 
+      INSERT INTO crm_tbl_admins 
       (uuid, full_name, email, password, role, privileges, image)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
@@ -126,7 +126,7 @@ const updateAdminUser = async (req, res) => {
         : 0;
 
     const query = `
-      UPDATE admin_users
+      UPDATE crm_tbl_admins
       SET 
         full_name = ?,
         email = ?,
@@ -145,7 +145,7 @@ const updateAdminUser = async (req, res) => {
         email,
         hashedPassword,
         role,
-        privileges || "Both",
+        privileges || 3,
         statusValue,
         image,
         uuid,
@@ -185,7 +185,7 @@ const updatePassword = async (req, res) => {
     }
 
     // Get user from database
-    const query = "SELECT * FROM admin_users WHERE uuid = ? LIMIT 1";
+    const query = "SELECT * FROM crm_tbl_admins WHERE uuid = ? LIMIT 1";
     db.query(query, [uuid], async (err, results) => {
       if (err) {
         console.error(err);
@@ -213,7 +213,7 @@ const updatePassword = async (req, res) => {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
       // Update password in database
-      const updateQuery = "UPDATE admin_users SET password = ? WHERE uuid = ?";
+      const updateQuery = "UPDATE crm_tbl_admins SET password = ? WHERE uuid = ?";
       db.query(updateQuery, [hashedPassword, uuid], (updateErr) => {
         if (updateErr) {
           console.error(updateErr);
@@ -235,7 +235,7 @@ const deleteAdminUser = async (req, res) => {
     const { uuid } = req.params;
 
     // Check if user exists
-    const checkQuery = "SELECT * FROM admin_users WHERE uuid = ? LIMIT 1";
+    const checkQuery = "SELECT * FROM crm_tbl_admins WHERE uuid = ? LIMIT 1";
     db.query(checkQuery, [uuid], (err, results) => {
       if (err) {
         console.error(err);
@@ -256,7 +256,7 @@ const deleteAdminUser = async (req, res) => {
       }
 
       // Delete user from database
-      const deleteQuery = "DELETE FROM admin_users WHERE uuid = ?";
+      const deleteQuery = "DELETE FROM crm_tbl_admins WHERE uuid = ?";
       db.query(deleteQuery, [uuid], (deleteErr) => {
         if (deleteErr) {
           console.error(deleteErr);

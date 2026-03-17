@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const getAllAiModels = async (req, res) => {
   try {
     const query =
-      "SELECT id, name, provider, model_id, is_default, created_at FROM ai_models ORDER BY created_at DESC";
+      "SELECT id, name, provider, model_id, is_default, created_at FROM crm_tbl_aiModels ORDER BY created_at DESC";
     db.query(query, (err, results) => {
       if (err) {
         console.error("Error fetching AI models:", err);
@@ -34,13 +34,13 @@ const createAiModel = async (req, res) => {
 
     // If setting as default, unset other defaults
     if (isDefault) {
-      db.query("UPDATE ai_models SET is_default = FALSE", (err) => {
+      db.query("UPDATE crm_tbl_aiModels SET is_default = FALSE", (err) => {
         if (err) console.error("Error unsetting defaults:", err);
       });
     }
 
     const query =
-      "INSERT INTO ai_models (id, name, provider, model_id, api_key, is_default) VALUES (?, ?, ?, ?, ?, ?)";
+      "INSERT INTO crm_tbl_aiModels (id, name, provider, model_id, api_key, is_default) VALUES (?, ?, ?, ?, ?, ?)";
     db.query(
       query,
       [id, name, provider, modelId, apiKey, isDefault || false],
@@ -68,7 +68,7 @@ const updateAiModel = async (req, res) => {
     const { name, provider, modelId, apiKey, isDefault } = req.body;
 
     // Check if model exists
-    db.query("SELECT * FROM ai_models WHERE id = ?", [id], (err, results) => {
+    db.query("SELECT * FROM crm_tbl_aiModels WHERE id = ?", [id], (err, results) => {
       if (err) {
         console.error("Error finding AI model:", err);
         return res.status(500).json({ message: "Database error" });
@@ -80,7 +80,7 @@ const updateAiModel = async (req, res) => {
 
       // If setting as default, unset other defaults
       if (isDefault) {
-        db.query("UPDATE ai_models SET is_default = FALSE", (err) => {
+        db.query("UPDATE crm_tbl_aiModels SET is_default = FALSE", (err) => {
           if (err) console.error("Error unsetting defaults:", err);
         });
       }
@@ -115,7 +115,7 @@ const updateAiModel = async (req, res) => {
       }
 
       values.push(id);
-      const query = `UPDATE ai_models SET ${updates.join(", ")} WHERE id = ?`;
+      const query = `UPDATE crm_tbl_aiModels SET ${updates.join(", ")} WHERE id = ?`;
 
       db.query(query, values, (err) => {
         if (err) {
@@ -136,7 +136,7 @@ const deleteAiModel = async (req, res) => {
   try {
     const { id } = req.params;
 
-    db.query("DELETE FROM ai_models WHERE id = ?", [id], (err, result) => {
+    db.query("DELETE FROM crm_tbl_aiModels WHERE id = ?", [id], (err, result) => {
       if (err) {
         console.error("Error deleting AI model:", err);
         return res.status(500).json({ message: "Failed to delete AI model" });
@@ -158,7 +158,7 @@ const deleteAiModel = async (req, res) => {
 const getDefaultAiModelInternal = () => {
   return new Promise((resolve, reject) => {
     db.query(
-      "SELECT * FROM ai_models WHERE is_default = TRUE LIMIT 1",
+      "SELECT * FROM crm_tbl_aiModels WHERE is_default = TRUE LIMIT 1",
       (err, results) => {
         if (err) {
           reject(err);
@@ -166,7 +166,7 @@ const getDefaultAiModelInternal = () => {
           resolve(results[0]);
         } else {
           // Return first model if no default
-          db.query("SELECT * FROM ai_models LIMIT 1", (err, results) => {
+          db.query("SELECT * FROM crm_tbl_aiModels LIMIT 1", (err, results) => {
             if (err) reject(err);
             else resolve(results[0] || null);
           });
@@ -183,7 +183,7 @@ const getAiModelByIdInternal = (identifier) => {
   return new Promise((resolve, reject) => {
     // try to match on primary key first, then fall back to model_id value
     db.query(
-      "SELECT * FROM ai_models WHERE id = ? OR model_id = ? LIMIT 1",
+      "SELECT * FROM crm_tbl_aiModels WHERE id = ? OR model_id = ? LIMIT 1",
       [identifier, identifier],
       (err, results) => {
         if (err) reject(err);
