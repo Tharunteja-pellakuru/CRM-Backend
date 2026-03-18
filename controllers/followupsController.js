@@ -104,6 +104,9 @@ const updateFollowup = async (req, res) => {
     followup_mode,
     followup_status,
     priority,
+    follow_brief,
+    completed_at,
+    completed_by,
   } = req.body;
 
   const query = `
@@ -139,21 +142,61 @@ const updateFollowup = async (req, res) => {
         console.error("Error updating followup:", err);
         return res.status(500).json({ message: "Database error" });
       }
-      res.status(200).json({ message: "Followup updated successfully" });
+
+      if (formattedStatus === "Completed" && follow_brief !== undefined) {
+        const summaryUuid = uuidv4();
+        const formattedCompletedAt = completed_at
+           ? new Date(completed_at).toISOString().slice(0, 19).replace('T', ' ')
+           : new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+        const querySummary = `
+          INSERT INTO crm_tbl_followUpSummary (uuid, followup_id, conclusion_message, completed_at, completed_by)
+          VALUES (?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE conclusion_message = ?, completed_at = ?, completed_by = ?
+        `;
+        db.query(
+          querySummary,
+          [summaryUuid, id, follow_brief, formattedCompletedAt, completed_by || "System", follow_brief, formattedCompletedAt, completed_by || "System"],
+          (summaryErr) => {
+             if (summaryErr) {
+                console.error("Error saving followup summary in edit:", summaryErr);
+             }
+             res.status(200).json({ message: "Followup updated successfully" });
+          }
+        );
+      } else {
+        const deleteSummaryQuery = "DELETE FROM crm_tbl_followUpSummary WHERE followup_id = ?";
+        db.query(deleteSummaryQuery, [id], (summaryErr) => {
+          if (summaryErr) {
+            console.error("Error deleting old followup summary on status change:", summaryErr);
+          }
+          res.status(200).json({ message: "Followup updated successfully" });
+        });
+      }
     }
   );
 };
 
-// Delete followup
 const deleteFollowup = async (req, res) => {
   const { id } = req.params;
-  const query = "DELETE FROM crm_tbl_leadFollowups WHERE id = ?";
-  db.query(query, [id], (err, result) => {
-    if (err) {
-      console.error("Error deleting followup:", err);
-      return res.status(500).json({ message: "Database error" });
+  
+  // First delete associated summary if it exists
+  const deleteSummaryQuery = "DELETE FROM crm_tbl_followUpSummary WHERE followup_id = ?";
+  db.query(deleteSummaryQuery, [id], (summaryErr) => {
+    if (summaryErr) {
+      console.error("Error deleting followup summary:", summaryErr);
+      return res.status(500).json({ message: "Database error while deleting summary" });
     }
-    res.status(200).json({ message: "Followup deleted successfully" });
+
+    // Then delete the followup itself
+    const query = "DELETE FROM crm_tbl_leadFollowups WHERE id = ?";
+    db.query(query, [id], (err, result) => {
+      if (err) {
+        console.error("Error deleting followup:", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+      res.status(200).json({ message: "Followup and related summary deleted successfully" });
+    });
   });
 };
 
@@ -209,7 +252,13 @@ const toggleFollowupStatus = async (req, res) => {
         }
       );
     } else {
-      res.status(200).json({ message: "Followup status updated" });
+      const deleteSummaryQuery = "DELETE FROM crm_tbl_followUpSummary WHERE followup_id = ?";
+      db.query(deleteSummaryQuery, [id], (summaryErr) => {
+        if (summaryErr) {
+          console.error("Error deleting old followup summary on status toggle:", summaryErr);
+        }
+        res.status(200).json({ message: "Followup status updated" });
+      });
     }
   });
 };

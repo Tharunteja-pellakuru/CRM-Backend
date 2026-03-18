@@ -75,34 +75,59 @@ const createClient = (req, res) => {
   );
 };
 
+const updateClient = (req, res) => {
+  const { id } = req.params;
+  const {
+    organisation_name,
+    client_name,
+    client_country,
+    client_state,
+    client_currency,
+    client_status,
+  } = req.body;
+
+  const query = `UPDATE crm_tbl_clients SET 
+    organisation_name = ?, 
+    client_name = ?, 
+    client_country = ?, 
+    client_state = ?, 
+    client_currency = ?, 
+    client_status = ?
+    WHERE client_id = ?`;
+
+  db.query(
+    query,
+    [
+      organisation_name,
+      client_name,
+      client_country,
+      client_state,
+      client_currency,
+      client_status,
+      id,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("Database error updating client:", err.message);
+        return res.status(500).json({ message: "Failed to update client" });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Client Not Found!" });
+      }
+      res.status(200).json({ message: "Client Updated Successfully!" });
+    },
+  );
+};
+
 const getClients = (req, res) => {
-  const query = `
-    SELECT 
-      c.*, 
-      c.client_id as id,
-      c.client_status as status,
-      COALESCE(c.client_name, l.full_name) as name,
-      l.full_name as lead_name, 
-      l.email as email, 
-      l.phone_number as phone,
-      l.lead_category as projectCategory,
-      l.message as brief_message,
-      l.website_url as website,
-      p.project_name, 
-      p.project_status, 
-      p.project_id
-    FROM crm_tbl_clients c
-    LEFT JOIN crm_tbl_leads l ON c.lead_id = l.id
-    LEFT JOIN crm_tbl_projects p ON c.client_id = p.client_id
-    ORDER BY c.created_at DESC
-  `;
-  db.query(query, (err, results) => {
+  const query = "SELECT * FROM crm_tbl_clients";
+  db.query(query, (err, result) => {
     if (err) {
-      console.log(err);
+      console.error("Error fetching clients:", err.message);
       return res.status(500).json({ message: "Failed to fetch clients" });
     }
-    res.status(200).json(results);
+    res.status(200).json(result);
   });
 };
 
-module.exports = { createClient, getClients };
+module.exports = { createClient, getClients, updateClient };

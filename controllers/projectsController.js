@@ -68,15 +68,71 @@ const createProject = (req, res) => {
   );
 };
 
-const getProjects = (req, res) => {
-  const query = "SELECT * FROM crm_tbl_projects ORDER BY created_at DESC";
-  db.query(query, (err, results) => {
+const updateProject = (req, res) => {
+  const { id } = req.params;
+  const {
+    project_name,
+    project_description,
+    project_category,
+    project_status,
+    project_priority,
+    project_budget,
+    onboarding_date,
+    deadline_date,
+  } = req.body;
+
+  const scope_document = req.file ? req.file.filename : req.body.scope_document;
+
+  let query = `UPDATE crm_tbl_projects SET 
+    project_name = ?, 
+    project_description = ?, 
+    project_category = ?, 
+    project_status = ?, 
+    project_priority = ?, 
+    project_budget = ?, 
+    onboarding_date = ?, 
+    deadline_date = ?`;
+  
+  const queryParams = [
+    project_name,
+    project_description,
+    project_category,
+    project_status,
+    project_priority,
+    project_budget,
+    onboarding_date,
+    deadline_date,
+  ];
+
+  if (scope_document) {
+    query += `, scope_document = ?`;
+    queryParams.push(scope_document);
+  }
+
+  query += ` WHERE project_id = ?`;
+  queryParams.push(id);
+
+  db.query(query, queryParams, (err, result) => {
     if (err) {
-      console.log(err);
-      return res.status(500).json({ message: "Failed to fetch projects" });
+      console.error("Database error updating project:", err.message);
+      return res.status(500).json({ message: "Failed to update project" });
     }
-    res.status(200).json(results);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Project Not Found!" });
+    }
+    res.status(200).json({ message: "Project Updated Successfully!" });
   });
 };
 
-module.exports = { createProject, getProjects };
+const getProjects = (req, res) => {
+  const query = "SELECT * FROM crm_tbl_projects";
+  db.query(query, (err, result) => {
+    if (err) {
+      console.error("Error fetching projects:", err.message);
+      return res.status(500).json({ message: "Failed to fetch projects" });
+    }
+    res.status(200).json(result);
+  });
+};
+
+module.exports = { createProject, getProjects, updateProject };

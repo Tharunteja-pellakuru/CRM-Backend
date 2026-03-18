@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 
-const { createProject, getProjects } = require("../controllers/projectsController");
+const { createProject, getProjects, updateProject } = require("../controllers/projectsController");
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
@@ -28,5 +28,6 @@ const upload = multer({
 
 router.post("/add-project", upload.single("scope_document"), createProject);
 router.get("/get-projects", getProjects);
+router.put("/update-project/:id", upload.single("scope_document"), updateProject);
 
 module.exports = router;
