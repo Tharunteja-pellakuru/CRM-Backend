@@ -144,7 +144,7 @@ const createClientsTable = () => {
 
 const createProjectsTable = () => {
   return runQuery(
-    `CREATE TABLE crm_tbl_projects (
+    `CREATE TABLE IF NOT EXISTS crm_tbl_projects (
     project_id INT AUTO_INCREMENT PRIMARY KEY,
     uuid CHAR(36) NOT NULL UNIQUE,
     project_name VARCHAR(250) NOT NULL,

@@ -42,24 +42,60 @@ const createClient = (req, res) => {
         console.log(err);
         return res.status(500).json({ message: "Failed to create client" });
       }
-      
+
       const clientId = result.insertId;
+
+      // Update lead status if lead_id is provided
+      if (lead_id) {
+        const updateLeadQuery =
+          "UPDATE crm_tbl_leads SET lead_status = 'Converted' WHERE id = ?";
+        db.query(updateLeadQuery, [lead_id], (leadErr) => {
+          if (leadErr) {
+            console.error("Error updating lead status:", leadErr.message);
+            // We don't return error here because client is already created
+          }
+        });
+      }
+
       db.query(
         "SELECT * FROM crm_tbl_clients WHERE client_id = ?",
         [clientId],
         (err, clients) => {
           if (err) {
-            return res.status(201).json({ message: "Client created successfully", uuid });
+            return res
+              .status(201)
+              .json({ message: "Client created successfully", uuid });
           }
-          res.status(201).json({ message: "Client created successfully", client: clients[0] });
-        }
+          res
+            .status(201)
+            .json({ message: "Client created successfully", client: clients[0] });
+        },
       );
     },
   );
 };
 
 const getClients = (req, res) => {
-  const query = "SELECT * FROM crm_tbl_clients ORDER BY created_at DESC";
+  const query = `
+    SELECT 
+      c.*, 
+      c.client_id as id,
+      c.client_status as status,
+      COALESCE(c.client_name, l.full_name) as name,
+      l.full_name as lead_name, 
+      l.email as email, 
+      l.phone_number as phone,
+      l.lead_category as projectCategory,
+      l.message as brief_message,
+      l.website_url as website,
+      p.project_name, 
+      p.project_status, 
+      p.project_id
+    FROM crm_tbl_clients c
+    LEFT JOIN crm_tbl_leads l ON c.lead_id = l.id
+    LEFT JOIN crm_tbl_projects p ON c.client_id = p.client_id
+    ORDER BY c.created_at DESC
+  `;
   db.query(query, (err, results) => {
     if (err) {
       console.log(err);
