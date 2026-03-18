@@ -1,6 +1,32 @@
 const db = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 
+// Helper to safely format a MySQL DATE/DATETIME value to YYYY-MM-DD string.
+// MySQL driver returns JS Date objects which get serialized as UTC,
+// causing a 1-day shift for timezones ahead of UTC (e.g. IST=UTC+5:30).
+const formatDateField = (dateVal) => {
+  if (!dateVal) return null;
+  if (typeof dateVal === "string") return dateVal.split("T")[0];
+  if (dateVal instanceof Date) {
+    const y = dateVal.getFullYear();
+    const m = String(dateVal.getMonth() + 1).padStart(2, "0");
+    const d = String(dateVal.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  return dateVal;
+};
+
+// Helper to format date fields in a project object
+const formatProjectDates = (project) => {
+  if (!project) return project;
+  return {
+    ...project,
+    onboarding_date: formatDateField(project.onboarding_date),
+    deadline_date: formatDateField(project.deadline_date),
+  };
+};
+
+
 const createProject = (req, res) => {
   const {
     project_name,
@@ -61,7 +87,7 @@ const createProject = (req, res) => {
           if (err) {
             return res.status(201).json({ message: "Project created successfully", uuid });
           }
-          res.status(201).json({ message: "Project created successfully", project: projects[0] });
+          res.status(201).json({ message: "Project created successfully", project: formatProjectDates(projects[0]) });
         }
       );
     },
@@ -120,7 +146,21 @@ const updateProject = (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Project Not Found!" });
     }
-    res.status(200).json({ message: "Project Updated Successfully!" });
+    
+    // Fetch and return the updated project
+    db.query(
+      "SELECT * FROM crm_tbl_projects WHERE project_id = ?",
+      [id],
+      (err, projects) => {
+        if (err) {
+          return res.status(200).json({ message: "Project Updated Successfully!" });
+        }
+        res.status(200).json({ 
+          message: "Project Updated Successfully!", 
+          project: formatProjectDates(projects[0]) 
+        });
+      }
+    );
   });
 };
 
@@ -131,8 +171,29 @@ const getProjects = (req, res) => {
       console.error("Error fetching projects:", err.message);
       return res.status(500).json({ message: "Failed to fetch projects" });
     }
-    res.status(200).json(result);
+    res.status(200).json(result.map(formatProjectDates));
   });
 };
 
-module.exports = { createProject, getProjects, updateProject };
+const updateProjectStatus = (req, res) => {
+  const { id } = req.params;
+  const { project_status } = req.body;
+
+  if (!project_status) {
+    return res.status(400).json({ message: "Project status is required" });
+  }
+
+  const query = "UPDATE crm_tbl_projects SET project_status = ? WHERE project_id = ?";
+  db.query(query, [project_status, id], (err, result) => {
+    if (err) {
+      console.error("Database error updating project status:", err.message);
+      return res.status(500).json({ message: "Failed to update project status" });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Project Not Found!" });
+    }
+    res.status(200).json({ message: "Project Status Updated Successfully!" });
+  });
+};
+
+module.exports = { createProject, getProjects, updateProject, updateProjectStatus };

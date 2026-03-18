@@ -61,20 +61,20 @@ const createLeadsTable = () => {
 const createNewFollowupsTable = () => {
   return runQuery(
     `CREATE TABLE IF NOT EXISTS crm_tbl_leadFollowups (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      uuid VARCHAR(100) UNIQUE,
-      followup_title VARCHAR(100) NOT NULL,
-      followup_description TEXT,
-      followup_datetime DATETIME NOT NULL,
-      followup_mode ENUM('Call','Email','Whatsapp','Meeting') NOT NULL,
-      followup_status ENUM('Pending','Completed','Reschedule','Cancelled') NOT NULL DEFAULT 'Pending',
-      followup_priority ENUM('High','Medium','Low') NOT NULL DEFAULT 'Medium',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      lead_id INT NOT NULL,
-      INDEX (lead_id),
-      FOREIGN KEY (lead_id) REFERENCES crm_tbl_leads(id) ON DELETE CASCADE
-    )`,
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        uuid VARCHAR(100) UNIQUE,
+        followup_title VARCHAR(100) NOT NULL,
+        followup_description TEXT,
+        followup_datetime DATETIME NOT NULL,
+        followup_mode ENUM('Call','Email','Whatsapp','Meeting') NOT NULL,
+        followup_status ENUM('Pending','Completed','Reschedule','Cancelled') NOT NULL DEFAULT 'Pending',
+        followup_priority ENUM('High','Medium','Low') NOT NULL DEFAULT 'Medium',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        lead_id INT NOT NULL,
+        INDEX (lead_id),
+        FOREIGN KEY (lead_id) REFERENCES crm_tbl_leads(id) ON DELETE CASCADE
+      )`,
     "Followups Table Created",
     "Error Creating Followups Table:",
   );
