@@ -120,7 +120,17 @@ const updateClient = (req, res) => {
 };
 
 const getClients = (req, res) => {
-  const query = "SELECT * FROM crm_tbl_clients";
+  const query = `
+    SELECT 
+      c.*, 
+      l.email, 
+      l.phone_number AS phone,
+      l.lead_category AS projectCategory,
+      l.website_url AS website,
+      l.message AS brief_message
+    FROM crm_tbl_clients c
+    LEFT JOIN crm_tbl_leads l ON c.lead_id = l.id
+  `;
   db.query(query, (err, result) => {
     if (err) {
       console.error("Error fetching clients:", err.message);
