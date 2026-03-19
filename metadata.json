@@ -1,0 +1,63 @@
+﻿[dotenv@17.3.1] injecting env (6) from .env -- tip: ≡ƒ¢í∩╕Å auth for agents: https://vestauth.com
+[
+  {
+    "id": "claude-3-5-sonnet",
+    "name": "Claude 3.5 Sonnet",
+    "provider": "anthropic",
+    "model_id": "claude-3-5-sonnet-20241022",
+    "key_length": 108,
+    "key_prefix": "sk-a",
+    "key_suffix": "3wAA",
+    "is_default": 0
+  },
+  {
+    "id": "default-gemini-flash",
+    "name": "Gemini 2.0 Flash (Recommended)",
+    "provider": "gemini",
+    "model_id": "gemini-2.0-flash",
+    "key_length": 39,
+    "key_prefix": "AIza",
+    "key_suffix": "gv8E",
+    "is_default": 0
+  },
+  {
+    "id": "default-gpt4o-mini",
+    "name": "GPT-4o Mini",
+    "provider": "openai",
+    "model_id": "gpt-4o-mini",
+    "key_length": 164,
+    "key_prefix": "sk-p",
+    "key_suffix": "FaYA",
+    "is_default": 0
+  },
+  {
+    "id": "gemini-1-5-flash",
+    "name": "Gemini 1.5 Flash (Highest Quota)",
+    "provider": "gemini",
+    "model_id": "gemini-1.5-flash",
+    "key_length": 39,
+    "key_prefix": "AIza",
+    "key_suffix": "gv8E",
+    "is_default": 0
+  },
+  {
+    "id": "gemini-3-flash",
+    "name": "Gemini 3 Flash (Low Quota)",
+    "provider": "gemini",
+    "model_id": "gemini-3-flash-preview",
+    "key_length": 39,
+    "key_prefix": "AIza",
+    "key_suffix": "gv8E",
+    "is_default": 0
+  },
+  {
+    "id": "groq-llama-3-70b",
+    "name": "Llama 3 (Groq)",
+    "provider": "groq",
+    "model_id": "llama-3.3-70b-versatile",
+    "key_length": 56,
+    "key_prefix": "gsk_",
+    "key_suffix": "vuyU",
+    "is_default": 1
+  }
+]

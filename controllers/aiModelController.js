@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const getAllAiModels = async (req, res) => {
   try {
     const query =
-      "SELECT id, name, provider, model_id, is_default, created_at FROM crm_tbl_aiModels ORDER BY created_at DESC";
+      "SELECT id, name, provider, model_id, api_key, is_default, created_at FROM crm_tbl_aiModels ORDER BY created_at DESC";
     db.query(query, (err, results) => {
       if (err) {
         console.error("Error fetching AI models:", err);

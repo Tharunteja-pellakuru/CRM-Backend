@@ -60,7 +60,7 @@ const createLeadsTable = () => {
 // Followups (depends on crm_tbl_leads)
 const createNewFollowupsTable = () => {
   return runQuery(
-    `CREATE TABLE IF NOT EXISTS crm_tbl_leadFollowups (
+    `CREATE TABLE IF NOT EXISTS crm_tbl_followups (
         id INT AUTO_INCREMENT PRIMARY KEY,
         uuid VARCHAR(100) UNIQUE,
         followup_title VARCHAR(100) NOT NULL,
@@ -72,8 +72,11 @@ const createNewFollowupsTable = () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         lead_id INT NOT NULL,
+        project_id INT NULL,
         INDEX (lead_id),
-        FOREIGN KEY (lead_id) REFERENCES crm_tbl_leads(id) ON DELETE CASCADE
+        INDEX (project_id),
+        FOREIGN KEY (lead_id) REFERENCES crm_tbl_leads(id) ON DELETE CASCADE,
+        FOREIGN KEY (project_id) REFERENCES crm_tbl_projects(project_id) ON DELETE SET NULL
       )`,
     "Followups Table Created",
     "Error Creating Followups Table:",
@@ -87,13 +90,17 @@ const createFollowupSummaryTable = () => {
       id INT PRIMARY KEY AUTO_INCREMENT,
       uuid VARCHAR(250) UNIQUE NOT NULL,
       followup_id INT NOT NULL,
+      project_id INT NULL,
       conclusion_message TEXT NOT NULL,
       completed_at DATETIME NOT NULL,
       completed_by VARCHAR(100),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (followup_id)
-          REFERENCES crm_tbl_leadFollowups(id)
-          ON DELETE CASCADE
+          REFERENCES crm_tbl_followups(id)
+          ON DELETE CASCADE,
+      FOREIGN KEY (project_id)
+          REFERENCES crm_tbl_projects(project_id)
+          ON DELETE SET NULL
     )`,
     "Followup Summary Table Created",
     "Error Creating Followup Summary Table:",

@@ -4,6 +4,7 @@ const followupsController = require("../controllers/followupsController");
 
 router.post("/add-followup", followupsController.createNewFollowup);
 router.get("/get-followups", followupsController.getAllFollowups);
+router.get("/client-followups/:clientId", followupsController.getClientFollowups);
 router.put("/update-followup/:id", followupsController.updateFollowup);
 router.delete("/delete-followup/:id", followupsController.deleteFollowup);
 router.put(
