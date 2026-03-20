@@ -86,6 +86,19 @@ const updateEnquiryStatus = (req, res) => {
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Enquiry Not Found!" });
       }
+
+      // If status is restored to something other than Converted, delete the associated lead
+      if (status !== 'Converted') {
+        db.query("SELECT enquiry_id FROM crm_tbl_enquiries WHERE enquiry_id = ? OR uuid = ?", [id, id], (err, rows) => {
+          if (!err && rows.length > 0) {
+            const eid = rows[0].enquiry_id;
+            db.query("DELETE FROM crm_tbl_leads WHERE enquiry_id = ?", [eid], (err) => {
+              if (err) console.error("Error deleting linked lead:", err.message);
+            });
+          }
+        });
+      }
+
       res.status(200).json({ message: "Enquiry Status Updated Successfully!" });
     });
   } catch (err) {

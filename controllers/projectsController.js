@@ -196,4 +196,20 @@ const updateProjectStatus = (req, res) => {
   });
 };
 
-module.exports = { createProject, getProjects, updateProject, updateProjectStatus };
+const deleteProject = (req, res) => {
+  const { id } = req.params;
+
+  const query = "DELETE FROM crm_tbl_projects WHERE project_id = ?";
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("Database error deleting project:", err.message);
+      return res.status(500).json({ message: "Failed to delete project" });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Project Not Found!" });
+    }
+    res.status(200).json({ message: "Project Deleted Successfully!" });
+  });
+};
+
+module.exports = { createProject, getProjects, updateProject, updateProjectStatus, deleteProject };

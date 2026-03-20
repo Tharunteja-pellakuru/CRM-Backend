@@ -14,6 +14,7 @@ const createLead = (req, res) => {
       email,
       message,
       country,
+      enquiry_id,
     } = req.body;
 
     const query = `INSERT INTO crm_tbl_leads (uuid, full_name,
@@ -23,7 +24,8 @@ const createLead = (req, res) => {
       website_url,
       email,     
       message,
-      country) VALUES (?,?,?,?,?,?,?,?,?)`;
+      country,
+      enquiry_id) VALUES (?,?,?,?,?,?,?,?,?,?)`;
 
     db.query(
       query,
@@ -37,6 +39,7 @@ const createLead = (req, res) => {
         email,
         message,
         country,
+        enquiry_id,
       ],
       (err, result) => {
         if (err) {
