@@ -179,6 +179,24 @@ const createProjectsTable = () => {
   );
 };
 
+const createEnquiriesTable = () => {
+  return runQuery(
+    `CREATE TABLE IF NOT EXISTS crm_tbl_enquiries (
+        enquiry_id INT PRIMARY KEY AUTO_INCREMENT,
+        uuid VARCHAR(100) UNIQUE NOT NULL,
+        full_name VARCHAR(250),
+        email VARCHAR(250),
+        phone_number VARCHAR(20),
+        website_url TEXT DEFAULT (''),
+        message TEXT,
+        status ENUM('New', 'Hold', 'Dismissed', 'Converted') DEFAULT 'New',
+        remarks TEXT DEFAULT ('')
+    )`,
+    "Enquiries Table Created",
+    "Error Creating Enquiries Table:",
+  );
+};
+
 // Create all tables in correct order (sequential)
 const createAllTables = async () => {
   await createUsersTable();
@@ -188,6 +206,7 @@ const createAllTables = async () => {
   await createAiModelsTable();
   await createClientsTable();
   await createProjectsTable();
+  await createEnquiriesTable();
 };
 
 module.exports = {
@@ -198,5 +217,6 @@ module.exports = {
   createFollowupSummaryTable,
   createProjectsTable,
   createAiModelsTable,
+  createEnquiriesTable,
   createAllTables,
 };

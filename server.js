@@ -14,6 +14,7 @@ const leadsRoutes = require("./routes/leadsRoutes");
 const followUpsRoutes = require("./routes/followUpsRoutes");
 const clientsRoutes = require("./routes/clientsRoutes");
 const projectsRoutes = require("./routes/projectsRoutes");
+const enquiriesRoutes = require("./routes/enquiriesRoutes");
 
 const app = express();
 
@@ -59,3 +60,4 @@ app.use("/api", leadsRoutes);
 app.use("/api", followUpsRoutes);
 app.use("/api", clientsRoutes);
 app.use("/api", projectsRoutes);
+app.use("/api", enquiriesRoutes);
