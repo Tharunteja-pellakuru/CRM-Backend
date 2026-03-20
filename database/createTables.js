@@ -190,7 +190,9 @@ const createEnquiriesTable = () => {
         website_url TEXT DEFAULT (''),
         message TEXT,
         status ENUM('New', 'Hold', 'Dismissed', 'Converted') DEFAULT 'New',
-        remarks TEXT DEFAULT ('')
+        remarks TEXT DEFAULT (''),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`,
     "Enquiries Table Created",
     "Error Creating Enquiries Table:",
