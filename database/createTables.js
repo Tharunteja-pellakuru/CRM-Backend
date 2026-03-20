@@ -83,7 +83,7 @@ const createNewFollowupsTable = () => {
   );
 };
 
-// Followup Summary (depends on crm_tbl_leadFollowups)
+// Followup Summary (depends on crm_tbl_followups)
 const createFollowupSummaryTable = () => {
   return runQuery(
     `CREATE TABLE IF NOT EXISTS crm_tbl_followUpSummary (

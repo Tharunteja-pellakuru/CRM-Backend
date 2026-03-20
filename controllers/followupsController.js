@@ -247,9 +247,9 @@ const toggleFollowupStatus = async (req, res) => {
       const summaryUuid = uuidv4();
       const querySummary = `
         INSERT INTO crm_tbl_followUpSummary (uuid, followup_id, project_id, conclusion_message, completed_at, completed_by)
-        VALUES (?, ?, (SELECT project_id FROM crm_tbl_leadFollowups WHERE id = ?), ?, ?, ?)
+        VALUES (?, ?, (SELECT project_id FROM crm_tbl_followups WHERE id = ?), ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
-          project_id = (SELECT project_id FROM crm_tbl_leadFollowups WHERE id = ?),
+          project_id = (SELECT project_id FROM crm_tbl_followups WHERE id = ?),
           conclusion_message = ?, 
           completed_at = ?, 
           completed_by = ?
